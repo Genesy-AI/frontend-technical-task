@@ -21,6 +21,7 @@
     "ts-toolbelt": "^9.6.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.1.12",
     "@types/lodash": "^4.17.20",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -31,6 +32,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "prettier": "^3.6.2",
+    "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2",
     "vite": "^7.1.4"
   }
