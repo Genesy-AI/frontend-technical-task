@@ -37,6 +37,7 @@ app.get('/leads/:id', async (req: Request, res: Response) => {
 })
 
 app.get('/leads', async (req: Request, res: Response) => {
+  // await new Promise(resolve => setTimeout(resolve, 4000))
   const leads = await prisma.lead.findMany()
   res.json(leads)
 })
