@@ -21,14 +21,36 @@ describe('isValidEmail', () => {
 })
 
 describe('parseCsv', () => {
-  it('should return empty array for empty content', () => {
-    expect(parseCsv('')).toEqual([])
-    expect(parseCsv('   ')).toEqual([])
+  it('should throw error for empty content', () => {
+    expect(() => parseCsv('')).toThrow('CSV content cannot be empty')
+    expect(() => parseCsv('   ')).toThrow('CSV content cannot be empty')
   })
 
-  it('should return empty array for CSV with only headers', () => {
+  it('should throw error for CSV with only headers', () => {
     const csv = 'firstName,lastName,email'
-    expect(parseCsv(csv)).toEqual([])
+    expect(() => parseCsv(csv)).toThrow('CSV file appears to be empty or contains no valid data')
+  })
+
+  it('should throw error for malformed CSV content', () => {
+    // Test with malformed quotes
+    const malformedCsv = `firstName,lastName,email
+"John,Doe,john@example.com,extra"field`
+    expect(() => parseCsv(malformedCsv)).toThrow('CSV parsing failed')
+  })
+
+  it('should throw error for CSV with mismatched field count', () => {
+    // This will create a FieldMismatch error in Papa Parse
+    const mismatchedCsv = `firstName,lastName,email
+John,Doe,john@example.com,ExtraField,AnotherExtra
+Jane,Smith`
+    expect(() => parseCsv(mismatchedCsv)).toThrow('CSV parsing failed')
+  })
+
+  it('should throw error for CSV with critical delimiter issues', () => {
+    // Test with content that has no delimiter at all
+    const noDelimiterCsv = `firstName lastName email
+John Doe john@example.com`
+    expect(() => parseCsv(noDelimiterCsv)).toThrow()
   })
 
   it('should parse valid CSV with all required fields', () => {

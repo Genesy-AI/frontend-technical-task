@@ -1,6 +1,7 @@
 import { FC, useState, useRef, useCallback, useMemo, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 import { api } from '../api'
 import { CsvLead, parseCsv } from '../utils/csvParser'
 
@@ -46,20 +47,26 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
 
   const handleFileSelect = (file: File) => {
     if (!file.name.endsWith('.csv')) {
-      alert('Please select a CSV file')
+      toast.error('Please select a CSV file')
       return
     }
 
     setIsProcessing(true)
     const reader = new FileReader()
     reader.onload = (e) => {
-      const content = e.target?.result as string
-      const parsed = parseCsv(content)
-      setCsvData(parsed)
-      setIsProcessing(false)
+      try {
+        const content = e.target?.result as string
+        const parsed = parseCsv(content)
+        setCsvData(parsed)
+        setIsProcessing(false)
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to parse CSV file'
+        toast.error(errorMessage)
+        setIsProcessing(false)
+      }
     }
     reader.onerror = () => {
-      alert('Error reading file')
+      toast.error('Error reading file')
       setIsProcessing(false)
     }
     reader.readAsText(file)
@@ -111,19 +118,18 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
         message += ` (${data.invalidLeads} invalid leads excluded)`
       }
 
-      alert(message)
+      toast.success(message)
       onClose()
       setCsvData([])
     },
-    onError: (error) => {
-      console.error('Import error:', error)
-      alert('Error importing leads. Please try again.')
+    onError: () => {
+      toast.error('Error importing leads. Please try again.')
     },
   })
 
   const handleImport = () => {
     if (stats.valid === 0) {
-      alert('No valid leads to import')
+      toast.error('No valid leads to import')
       return
     }
     importMutation.mutate(csvData)

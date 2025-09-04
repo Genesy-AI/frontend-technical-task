@@ -19,6 +19,10 @@ export const isValidEmail = (email: string): boolean => {
 }
 
 export const parseCsv = (content: string): CsvLead[] => {
+  if (!content?.trim()) {
+    throw new Error('CSV content cannot be empty')
+  }
+
   const parseResult = Papa.parse<Record<string, string>>(content, {
     header: true,
     skipEmptyLines: true,
@@ -27,8 +31,19 @@ export const parseCsv = (content: string): CsvLead[] => {
     quoteChar: '"',
   })
 
+  // Check for critical parsing errors
   if (parseResult.errors.length > 0) {
-    console.warn('CSV parsing errors:', parseResult.errors)
+    const criticalErrors = parseResult.errors.filter(
+      error => error.type === 'Delimiter' || error.type === 'Quotes' || error.type === 'FieldMismatch'
+    )
+    if (criticalErrors.length > 0) {
+      throw new Error(`CSV parsing failed: ${criticalErrors[0].message}`)
+    }
+  }
+
+  // Check if we have any data after parsing
+  if (!parseResult.data || parseResult.data.length === 0) {
+    throw new Error('CSV file appears to be empty or contains no valid data')
   }
 
   const data: CsvLead[] = []

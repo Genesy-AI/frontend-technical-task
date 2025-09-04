@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { FC, useState } from 'react'
+import toast from 'react-hot-toast'
 import { api } from '../api'
 import { MessageTemplateModal } from './MessageTemplateModal'
 import { CsvImportModal } from './CsvImportModal'
@@ -14,19 +15,23 @@ export const LeadsList: FC = () => {
   const leads = useQuery({
     queryKey: ['leads', 'getMany'],
     queryFn: async () => api.leads.getMany(),
+    retry: false,
   })
+  
 
   const deleteLeadsMutation = useMutation({
     mutationFn: async (ids: number[]) => api.leads.deleteMany({ ids }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['leads', 'getMany'] })
       setSelectedLeads([]) // Clear selection after successful delete
-      // Could add a success toast here
-      console.log(`Successfully deleted ${data.deletedCount} leads`)
+      
+      const message = data.deletedCount === 1 
+        ? `Successfully deleted ${data.deletedCount} lead`
+        : `Successfully deleted ${data.deletedCount} leads`
+      toast.success(message)
     },
-    onError: (error) => {
-      console.error('Error deleting leads:', error)
-      // Could add an error toast here
+    onError: () => {
+      toast.error('Failed to delete leads. Please try again.')
     }
   })
 
@@ -68,20 +73,6 @@ export const LeadsList: FC = () => {
     )
   }
 
-  if (leads.isError) {
-    return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <div className="flex">
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-red-800">Error loading leads</h3>
-            <div className="mt-2 text-sm text-red-700">
-              {leads.error.message}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   const isAllSelected = leads.data && selectedLeads.length === leads.data.length
   const isIndeterminate = selectedLeads.length > 0 && selectedLeads.length < (leads.data?.length || 0)
@@ -144,7 +135,7 @@ export const LeadsList: FC = () => {
                     </button>
                     <button
                       onClick={() => {
-                        // TODO: Implement gender guessing
+                        toast.error('Gender guessing feature is not yet implemented')
                         setIsEnrichDropdownOpen(false)
                       }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
@@ -227,7 +218,7 @@ export const LeadsList: FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {leads.data?.map((lead) => (
+              {!leads.isError && leads.data?.map((lead) => (
                 <tr 
                   key={lead.id} 
                   className={`hover:bg-gray-50 transition-colors ${
@@ -272,7 +263,26 @@ export const LeadsList: FC = () => {
             </tbody>
           </table>
           
-          {leads.data?.length === 0 && (
+          {leads.isError && (
+            <div className="text-center py-12">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-6 mx-6">
+                <div className="text-red-800">
+                  <h3 className="text-lg font-medium mb-2">Error loading leads</h3>
+                  <div className="text-sm text-red-700">
+                    {leads.error?.message || 'An unexpected error occurred'}
+                  </div>
+                  <button
+                    onClick={() => window.location.reload()}
+                    className="mt-4 inline-flex items-center px-4 py-2 border border-red-300 text-sm font-medium rounded-md text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                  >
+                    Refresh Page
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {!leads.isError && leads.data?.length === 0 && (
             <div className="text-center py-12">
               <div className="text-gray-500">
                 <div className="text-lg font-medium">No leads found</div>

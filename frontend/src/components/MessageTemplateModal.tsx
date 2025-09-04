@@ -1,6 +1,7 @@
 import { FC, useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 import { api } from '../api'
 
 interface MessageTemplateModalProps {
@@ -34,18 +35,26 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
       
       if (result.errors.length === 0) {
         // Complete success - close modal automatically
-        console.log(`Successfully generated messages for ${result.generatedCount} leads`)
+        const message = result.generatedCount === 1 
+          ? `Successfully generated message for ${result.generatedCount} lead`
+          : `Successfully generated messages for ${result.generatedCount} leads`
+        toast.success(message)
         onClose()
         setTemplate('')
         setGenerationResult(null)
       } else {
         // Partial success with errors - keep modal open to show errors
-        console.warn(`Generated messages for ${result.generatedCount} leads. ${result.errors.length} leads had errors:`, result.errors)
+        const successMessage = result.generatedCount === 1 
+          ? `Generated message for ${result.generatedCount} lead`
+          : `Generated messages for ${result.generatedCount} leads`
+        const errorMessage = result.errors.length === 1
+          ? `${result.errors.length} lead had errors`
+          : `${result.errors.length} leads had errors`
+        toast.success(`${successMessage}, but ${errorMessage}. Check details below.`)
       }
     },
-    onError: (error) => {
-      console.error('Error generating messages:', error)
-      // Error toast
+    onError: () => {
+      toast.error('Failed to generate messages. Please try again.')
     }
   })
 
@@ -53,6 +62,7 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
     e.preventDefault()
     if (template.trim() && selectedLeadIds.length > 0) {
       setGenerationResult(null) // Clear previous results
+      
       generateMessagesMutation.mutate({
         leadIds: selectedLeadIds,
         template: template.trim()
