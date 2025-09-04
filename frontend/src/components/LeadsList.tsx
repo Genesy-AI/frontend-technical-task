@@ -23,7 +23,7 @@ export const LeadsList: FC = () => {
     mutationFn: async (ids: number[]) => api.leads.deleteMany({ ids }),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['leads', 'getMany'] })
-      setSelectedLeads([]) // Clear selection after successful delete
+      setSelectedLeads([])
       
       const message = data.deletedCount === 1 
         ? `Successfully deleted ${data.deletedCount} lead`
@@ -89,7 +89,6 @@ export const LeadsList: FC = () => {
               </span>
             )}
             
-            {/* Import CSV Button */}
             <button
               onClick={() => setIsImportModalOpen(true)}
               className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -100,7 +99,6 @@ export const LeadsList: FC = () => {
               Import CSV
             </button>
             
-            {/* Enrich Dropdown */}
             <div className="relative">
               <button
                 onClick={() => selectedLeads.length > 0 && setIsEnrichDropdownOpen(!isEnrichDropdownOpen)}
@@ -293,7 +291,6 @@ export const LeadsList: FC = () => {
         </div>
       </div>
 
-      {/* Message Template Modal */}
       <MessageTemplateModal
         isOpen={isMessageModalOpen}
         onClose={() => setIsMessageModalOpen(false)}
@@ -301,7 +298,6 @@ export const LeadsList: FC = () => {
         selectedLeadsCount={selectedLeads.length}
       />
 
-      {/* CSV Import Modal */}
       <CsvImportModal
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}

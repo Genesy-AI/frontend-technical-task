@@ -7,7 +7,6 @@ export interface CsvLead {
   jobTitle?: string
   countryCode?: string
   companyName?: string
-  // Validation fields
   isValid: boolean
   errors: string[]
   rowIndex: number
@@ -31,7 +30,6 @@ export const parseCsv = (content: string): CsvLead[] => {
     quoteChar: '"',
   })
 
-  // Check for critical parsing errors
   if (parseResult.errors.length > 0) {
     const criticalErrors = parseResult.errors.filter(
       error => error.type === 'Delimiter' || error.type === 'Quotes' || error.type === 'FieldMismatch'
@@ -41,7 +39,6 @@ export const parseCsv = (content: string): CsvLead[] => {
     }
   }
 
-  // Check if we have any data after parsing
   if (!parseResult.data || parseResult.data.length === 0) {
     throw new Error('CSV file appears to be empty or contains no valid data')
   }
@@ -49,12 +46,10 @@ export const parseCsv = (content: string): CsvLead[] => {
   const data: CsvLead[] = []
 
   parseResult.data.forEach((row, index) => {
-    // Skip completely empty rows
     if (Object.values(row).every(value => !value)) return
 
-    const lead: Partial<CsvLead> = { rowIndex: index + 2 } // +2 because header is row 1, data starts at row 2
+    const lead: Partial<CsvLead> = { rowIndex: index + 2 }
 
-    // Map CSV columns to lead properties with flexible header matching
     Object.entries(row).forEach(([header, value]) => {
       const normalizedHeader = header.toLowerCase().replace(/[^a-z]/g, '')
       const trimmedValue = value?.trim() || ''
@@ -81,7 +76,6 @@ export const parseCsv = (content: string): CsvLead[] => {
       }
     })
 
-    // Validation
     const errors: string[] = []
     if (!lead.firstName?.trim()) {
       errors.push('First name is required')

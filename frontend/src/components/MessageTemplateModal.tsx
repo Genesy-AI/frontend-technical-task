@@ -34,7 +34,6 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
       setGenerationResult(result)
       
       if (result.errors.length === 0) {
-        // Complete success - close modal automatically
         const message = result.generatedCount === 1 
           ? `Successfully generated message for ${result.generatedCount} lead`
           : `Successfully generated messages for ${result.generatedCount} leads`
@@ -43,7 +42,6 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
         setTemplate('')
         setGenerationResult(null)
       } else {
-        // Partial success with errors - keep modal open to show errors
         const successMessage = result.generatedCount === 1 
           ? `Generated message for ${result.generatedCount} lead`
           : `Generated messages for ${result.generatedCount} leads`
@@ -61,7 +59,7 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (template.trim() && selectedLeadIds.length > 0) {
-      setGenerationResult(null) // Clear previous results
+      setGenerationResult(null)
       
       generateMessagesMutation.mutate({
         leadIds: selectedLeadIds,
@@ -84,7 +82,6 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
     }
   }
 
-  // Handle escape key and focus
   useEffect(() => {
     const handleEscapeKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -94,10 +91,8 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscapeKey)
-      // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden'
       
-      // Focus the textarea when modal opens
       if (textareaRef.current) {
         textareaRef.current.focus()
       }
@@ -126,7 +121,6 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
       const newTemplate = template.substring(0, start) + `{${field}}` + template.substring(end)
       setTemplate(newTemplate)
       
-      // Reset cursor position
       setTimeout(() => {
         textarea.focus()
         textarea.setSelectionRange(start + field.length + 2, start + field.length + 2)
@@ -196,10 +190,8 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
               </p>
             </div>
 
-            {/* Generation Results */}
             {generationResult && (
               <div className="space-y-4">
-                {/* Success Summary */}
                 {generationResult.generatedCount > 0 && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                     <div className="flex items-center">
@@ -213,7 +205,6 @@ export const MessageTemplateModal: FC<MessageTemplateModalProps> = ({
                   </div>
                 )}
 
-                {/* Errors */}
                 {generationResult.errors.length > 0 && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                     <div className="flex items-start">

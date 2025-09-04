@@ -32,14 +32,12 @@ describe('parseCsv', () => {
   })
 
   it('should throw error for malformed CSV content', () => {
-    // Test with malformed quotes
     const malformedCsv = `firstName,lastName,email
 "John,Doe,john@example.com,extra"field`
     expect(() => parseCsv(malformedCsv)).toThrow('CSV parsing failed')
   })
 
   it('should throw error for CSV with mismatched field count', () => {
-    // This will create a FieldMismatch error in Papa Parse
     const mismatchedCsv = `firstName,lastName,email
 John,Doe,john@example.com,ExtraField,AnotherExtra
 Jane,Smith`
@@ -47,7 +45,6 @@ Jane,Smith`
   })
 
   it('should throw error for CSV with critical delimiter issues', () => {
-    // Test with content that has no delimiter at all
     const noDelimiterCsv = `firstName lastName email
 John Doe john@example.com`
     expect(() => parseCsv(noDelimiterCsv)).toThrow()
@@ -83,15 +80,12 @@ John,Smith,`
     
     expect(result).toHaveLength(3)
     
-    // Missing firstName
     expect(result[0].isValid).toBe(false)
     expect(result[0].errors).toContain('First name is required')
     
-    // Missing lastName
     expect(result[1].isValid).toBe(false)
     expect(result[1].errors).toContain('Last name is required')
     
-    // Missing email
     expect(result[2].isValid).toBe(false)
     expect(result[2].errors).toContain('Email is required')
   })
@@ -170,7 +164,7 @@ Bob,Johnson,bob@example.com`
     const result = parseCsv(csv)
     
     expect(result).toHaveLength(3)
-    expect(result[0].rowIndex).toBe(2) // First data row (header is row 1)
+    expect(result[0].rowIndex).toBe(2)
     expect(result[1].rowIndex).toBe(3)
     expect(result[2].rowIndex).toBe(4)
   })

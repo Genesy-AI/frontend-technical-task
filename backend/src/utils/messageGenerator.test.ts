@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest'
 import { generateMessageFromTemplate, Lead } from './messageGenerator'
 
 describe('generateMessageFromTemplate', () => {
-  // Mock lead data for testing
   const fullLead: Lead = {
     firstName: 'John',
     lastName: 'Doe',
@@ -136,7 +135,6 @@ describe('generateMessageFromTemplate', () => {
 
     it('should handle nested brackets', () => {
       const template = 'Hello {{firstName}}!'
-      // This should find {firstName} and replace it correctly
       const result = generateMessageFromTemplate(template, fullLead)
       expect(result).toBe('Hello {John}!')
     })

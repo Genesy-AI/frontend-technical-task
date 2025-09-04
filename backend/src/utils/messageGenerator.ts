@@ -10,7 +10,6 @@ export interface Lead {
 export function generateMessageFromTemplate(template: string, lead: Lead): string {
   let message = template
   
-  // Define available fields that can be replaced
   const availableFields = {
     firstName: lead.firstName,
     lastName: lead.lastName,
@@ -20,11 +19,10 @@ export function generateMessageFromTemplate(template: string, lead: Lead): strin
     countryCode: lead.countryCode
   }
   
-  // Find all template variables in the format {fieldName}
   const templateVariables = template.match(/\{(\w+)\}/g) || []
   
   for (const variable of templateVariables) {
-    const fieldName = variable.slice(1, -1) // Remove { and }
+    const fieldName = variable.slice(1, -1)
     
     if (fieldName in availableFields) {
       const fieldValue = availableFields[fieldName as keyof typeof availableFields]

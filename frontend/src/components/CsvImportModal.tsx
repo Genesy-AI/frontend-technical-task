@@ -18,12 +18,10 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
   const queryClient = useQueryClient()
 
 
-  // Statistics
   const stats = useMemo(() => {
     const validLeads = csvData.filter((lead) => lead.isValid)
     const invalidLeads = csvData.filter((lead) => !lead.isValid)
 
-    // Check for duplicates within the CSV
     const duplicateGroups = new Map<string, CsvLead[]>()
     validLeads.forEach((lead) => {
       const key = `${lead.firstName.toLowerCase()}_${(lead.lastName || '').toLowerCase()}`
@@ -148,7 +146,6 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
     }
   }
 
-  // Handle escape key and focus
   useEffect(() => {
     const handleEscapeKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
@@ -158,7 +155,6 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
 
     if (isOpen) {
       document.addEventListener('keydown', handleEscapeKey)
-      // Prevent body scroll when modal is open
       document.body.style.overflow = 'hidden'
     }
 
@@ -179,7 +175,6 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
         className="bg-white rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className="px-6 py-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-medium text-gray-900">Import Leads from CSV</h3>
@@ -195,7 +190,6 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
           </div>
         </div>
 
-        {/* Content */}
         <div className="px-6 py-4">
           {csvData.length === 0 ? (
             <div
@@ -251,7 +245,6 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Statistics */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-gray-900 mb-3">Import Summary</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -274,7 +267,6 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
                 </div>
               </div>
 
-              {/* Preview Table */}
               <div className="border border-gray-200 rounded-lg max-h-96 overflow-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50 sticky top-0">
@@ -327,7 +319,6 @@ export const CsvImportModal: FC<CsvImportModalProps> = ({ isOpen, onClose }) => 
           )}
         </div>
 
-        {/* Footer */}
         {csvData.length > 0 && (
           <div className="px-6 py-4 border-t border-gray-200 flex justify-between">
             <div className="flex space-x-3">

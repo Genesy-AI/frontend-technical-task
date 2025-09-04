@@ -10,7 +10,6 @@ app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   
-  // Handle OPTIONS requests for CORS preflight
   if (req.method === 'OPTIONS') {
     res.sendStatus(200)
     return
@@ -24,7 +23,6 @@ app.post('/', async (req: Request, res: Response) => {
 })
 
 app.post('/leads', async (req: Request, res: Response) => {
-  //get name, lastName and email from the request body
   const { name, lastName, email } = req.body
   
   if (!name || !lastName || !email) {
@@ -125,7 +123,6 @@ app.post('/leads/generate-messages', async (req: Request, res: Response) => {
   }
 
   try {
-    // Get all leads by the provided IDs
     const leads = await prisma.lead.findMany({
       where: {
         id: {
@@ -141,13 +138,10 @@ app.post('/leads/generate-messages', async (req: Request, res: Response) => {
     let generatedCount = 0
     const errors: Array<{ leadId: number, leadName: string, error: string }> = []
 
-    // Process each lead
     for (const lead of leads) {
       try {
-        // Generate message by replacing template fields
         const message = generateMessageFromTemplate(template, lead)
         
-        // Update the lead with the generated message
         await prisma.lead.update({
           where: { id: lead.id },
           data: { message }
@@ -186,7 +180,6 @@ app.post('/leads/bulk', async (req: Request, res: Response) => {
   }
 
   try {
-    // Validate each lead has required fields
     const validLeads = leads.filter(lead => {
       return lead.firstName && lead.lastName && lead.email && 
              typeof lead.firstName === 'string' && lead.firstName.trim() &&
@@ -198,7 +191,6 @@ app.post('/leads/bulk', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'No valid leads found. firstName, lastName, and email are required.' })
     }
 
-    // Check for existing duplicates in database
     const existingLeads = await prisma.lead.findMany({
       where: {
         OR: validLeads.map(lead => ({
@@ -210,7 +202,6 @@ app.post('/leads/bulk', async (req: Request, res: Response) => {
       }
     })
 
-    // Filter out duplicates
     const leadKeys = new Set(
       existingLeads.map(lead => 
         `${lead.firstName.toLowerCase()}_${(lead.lastName || '').toLowerCase()}`
@@ -222,7 +213,6 @@ app.post('/leads/bulk', async (req: Request, res: Response) => {
       return !leadKeys.has(key)
     })
 
-    // Import unique leads
     let importedCount = 0
     const errors: Array<{ lead: any, error: string }> = []
 

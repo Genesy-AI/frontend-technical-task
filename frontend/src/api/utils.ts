@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AxiosResponse } from 'axios'
 import { axiosInstance } from '../utils/axios'
 
@@ -31,7 +30,6 @@ export function endpoint<Output, Input>(
     if (method === 'get') {
       res = await axiosInstance[method](url, { params: body })
     } else {
-      // For all non-GET requests (POST, PUT, DELETE, PATCH), send body as JSON
       res = await axiosInstance.request({
         method,
         url,
