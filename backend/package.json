@@ -9,16 +9,22 @@
     "build": "tsc -p .",
     "format": "prettier --write .",
     "gen:prisma": "prisma generate",
-    "migrate:dev": "prisma migrate dev"
+    "migrate:dev": "prisma migrate dev",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^22.18.1",
+    "@vitest/ui": "^3.2.4",
     "nodemon": "^3.1.10",
     "prettier": "^3.6.2",
     "prisma": "^6.15.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "@prisma/client": "^6.15.0",
