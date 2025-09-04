@@ -28,10 +28,15 @@ export function endpoint<Output, Input>(
     const url = `${typeof urlBuilder === 'string' ? urlBuilder : urlBuilder(body!)}`
 
     let res: AxiosResponse
-    if (method === 'get' || method === 'delete') {
+    if (method === 'get') {
       res = await axiosInstance[method](url, { params: body })
     } else {
-      res = await axiosInstance[method](url, body)
+      // For all non-GET requests (POST, PUT, DELETE, PATCH), send body as JSON
+      res = await axiosInstance.request({
+        method,
+        url,
+        data: body
+      })
     }
 
     return res.data as Output

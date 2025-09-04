@@ -7,6 +7,14 @@ app.use(express.json())
 app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', '*')
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  
+  // Handle OPTIONS requests for CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200)
+    return
+  }
+  
   next()
 })
 
@@ -65,6 +73,33 @@ app.delete('/leads/:id', async (req: Request, res: Response) => {
     },
   })
   res.json()
+})
+
+app.delete('/leads', async (req: Request, res: Response) => {
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({ error: 'Request body is required and must be valid JSON' })
+  }
+
+  const { ids } = req.body
+  
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return res.status(400).json({ error: 'ids must be a non-empty array' })
+  }
+  
+  try {
+    const result = await prisma.lead.deleteMany({
+      where: {
+        id: {
+          in: ids.map(id => Number(id))
+        }
+      }
+    })
+    
+    res.json({ deletedCount: result.count })
+  } catch (error) {
+    console.error('Error deleting leads:', error)
+    res.status(500).json({ error: 'Failed to delete leads' })
+  }
 })
 
 app.listen(4000, () => {
