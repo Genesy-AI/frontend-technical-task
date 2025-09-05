@@ -24,11 +24,17 @@ app.post('/', async (req: Request, res: Response) => {
 })
 
 app.post('/leads', async (req: Request, res: Response) => {
-  //get name and email from the request body
-  const { name, email } = req.body
+  //get name, lastName and email from the request body
+  const { name, lastName, email } = req.body
+  
+  if (!name || !lastName || !email) {
+    return res.status(400).json({ error: 'firstName, lastName, and email are required' })
+  }
+  
   const lead = await prisma.lead.create({
     data: {
       firstName: String(name),
+      lastName: String(lastName),
       email: String(email),
     },
   })
@@ -151,7 +157,7 @@ app.post('/leads/generate-messages', async (req: Request, res: Response) => {
       } catch (error) {
         errors.push({
           leadId: lead.id,
-          leadName: `${lead.firstName} ${lead.lastName || ''}`.trim(),
+          leadName: `${lead.firstName} ${lead.lastName}`.trim(),
           error: error instanceof Error ? error.message : 'Unknown error'
         })
       }
@@ -165,6 +171,92 @@ app.post('/leads/generate-messages', async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error generating messages:', error)
     res.status(500).json({ error: 'Failed to generate messages' })
+  }
+})
+
+app.post('/leads/bulk', async (req: Request, res: Response) => {
+  if (!req.body || typeof req.body !== 'object') {
+    return res.status(400).json({ error: 'Request body is required and must be valid JSON' })
+  }
+
+  const { leads } = req.body
+  
+  if (!Array.isArray(leads) || leads.length === 0) {
+    return res.status(400).json({ error: 'leads must be a non-empty array' })
+  }
+
+  try {
+    // Validate each lead has required fields
+    const validLeads = leads.filter(lead => {
+      return lead.firstName && lead.lastName && lead.email && 
+             typeof lead.firstName === 'string' && lead.firstName.trim() &&
+             typeof lead.lastName === 'string' && lead.lastName.trim() &&
+             typeof lead.email === 'string' && lead.email.trim()
+    })
+
+    if (validLeads.length === 0) {
+      return res.status(400).json({ error: 'No valid leads found. firstName, lastName, and email are required.' })
+    }
+
+    // Check for existing duplicates in database
+    const existingLeads = await prisma.lead.findMany({
+      where: {
+        OR: validLeads.map(lead => ({
+          AND: [
+            { firstName: lead.firstName.trim() },
+            { lastName: lead.lastName.trim() }
+          ]
+        }))
+      }
+    })
+
+    // Filter out duplicates
+    const leadKeys = new Set(
+      existingLeads.map(lead => 
+        `${lead.firstName.toLowerCase()}_${(lead.lastName || '').toLowerCase()}`
+      )
+    )
+
+    const uniqueLeads = validLeads.filter(lead => {
+      const key = `${lead.firstName.toLowerCase()}_${lead.lastName.toLowerCase()}`
+      return !leadKeys.has(key)
+    })
+
+    // Import unique leads
+    let importedCount = 0
+    const errors: Array<{ lead: any, error: string }> = []
+
+    for (const lead of uniqueLeads) {
+      try {
+        await prisma.lead.create({
+          data: {
+            firstName: lead.firstName.trim(),
+            lastName: lead.lastName.trim(),
+            email: lead.email.trim(),
+            jobTitle: lead.jobTitle ? lead.jobTitle.trim() : null,
+            countryCode: lead.countryCode ? lead.countryCode.trim() : null,
+            companyName: lead.companyName ? lead.companyName.trim() : null,
+          }
+        })
+        importedCount++
+      } catch (error) {
+        errors.push({
+          lead: lead,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        })
+      }
+    }
+
+    res.json({
+      success: true,
+      importedCount,
+      duplicatesSkipped: validLeads.length - uniqueLeads.length,
+      invalidLeads: leads.length - validLeads.length,
+      errors
+    })
+  } catch (error) {
+    console.error('Error importing leads:', error)
+    res.status(500).json({ error: 'Failed to import leads' })
   }
 })
 
